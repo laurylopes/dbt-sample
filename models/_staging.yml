@@ -1,0 +1,94 @@
+version: 2
+
+models:
+  - name: stg_user
+    description: |
+      Staging model for user data with standardization and type casting.
+    columns:
+      - name: id
+        description: '{{ doc("dbt_scd_id") }}'
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: '{{ doc("user_id") }}'
+        tests:
+          - not_null
+      - name: created_at
+        description: '{{ doc("created_at") }}'
+        tests:
+          - not_null
+      - name: platform
+        description: '{{ doc("platform") }}'
+      - name: acquisition_channel
+        description: '{{ doc("acquisition_channel") }}'
+      - name: ip_country
+        description: '{{ doc("ip_country") }} - Transformed: UPPERCASE, UNKNOWN if null'
+
+  - name: stg_order
+    description: |
+      Staging model for order data with standardization and type casting.
+    columns:
+      - name: order_id
+        description: "{{ doc('order_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: '{{ doc("user_id") }} - Transformed: Cast to string'
+        tests:
+          - not_null
+      - name: created_at
+        description: '{{ doc("created_at") }}'
+        tests:
+          - not_null
+      - name: updated_at
+        description: '{{ doc("updated_at") }}'
+      - name: status
+        description: '{{ doc("status") }} - Transformed: Lowercase'
+      - name: amount
+        description: '{{ doc("amount") }}'
+      - name: currency
+        description: '{{ doc("currency") }} - Transformed: UPPERCASE'
+      - name: esim_package
+        description: '{{ doc("esim_package") }}'
+      - name: payment_method
+        description: '{{ doc("payment_method") }}'
+      - name: card_country
+        description: '{{ doc("card_country") }} - Transformed: UPPERCASE'
+      - name: destination_country
+        description: '{{ doc("destination_country") }} - Transformed: UPPERCASE'
+      - name: completed_at
+        description: '{{ doc("completed_at") }} - Derived: When status = "completed"'
+      - name: refunded_at
+        description: '{{ doc("refunded_at") }} - Derived: When status = "refunded"'
+      - name: failed_at
+        description: '{{ doc("failed_at") }} - Derived: When status = "failed"'
+
+  - name: stg_exchange_rate
+    description: |
+      Staging model for exchange rate data from snapshot.
+    columns:
+      - name: id
+        description: '{{ doc("dbt_scd_id") }} - Renamed from dbt_scd_id'
+        tests:
+          - not_null
+          - unique
+      - name: currency
+        description: '{{ doc("currency") }}'
+        tests:
+          - not_null
+      - name: usd_rate
+        description: '{{ doc("usd_rate") }}'
+        tests:
+          - not_null
+      - name: updated_at
+        description: '{{ doc("updated_at") }}'
+        tests:
+          - not_null
+      - name: valid_from
+        description: '{{ doc("valid_from") }}'
+        tests:
+          - not_null
+      - name: valid_to
+        description: '{{ doc("valid_to") }}'

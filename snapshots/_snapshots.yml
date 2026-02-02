@@ -1,0 +1,56 @@
+version: 2
+
+snapshots:
+  - name: snp_raw_user
+    description: |
+      Tracks historical changes in user attributes over time.
+      - Type: Snapshot
+      - Strategy: Check columns (ip_country, platform)
+      - Unique Key: user_id
+      - Target Schema: snapshots
+      - Source: raw.user
+      - Refresh: Run via `dbt snapshot` command
+    columns:
+      - name: user_id
+        description: "{{ doc('user_id') }} - Natural key for SCD tracking"
+      - name: ip_country
+        description: "{{ doc('ip_country') }} - Tracked: Changes trigger new snapshot"
+      - name: platform
+        description: "{{ doc('platform') }} - Tracked: Changes trigger new snapshot"
+      - name: dbt_scd_id
+        description: "{{ doc('dbt_scd_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: dbt_updated_at
+        description: "{{ doc('dbt_updated_at') }}"
+      - name: dbt_valid_from
+        description: "{{ doc('dbt_valid_from') }}"
+      - name: dbt_valid_to
+        description: "{{ doc('dbt_valid_to') }}"
+
+  - name: snp_raw_exchange_rate
+    description: |
+      Tracks historical changes in currency exchange rates.
+      - Type: Snapshots
+      - Strategy: Check columns (usd_rate, currency)
+      - Unique Key: currency
+      - Target Schema: snapshots
+      - Source: raw.exchange_rate
+      - Refresh: Run via `dbt snapshot` command
+    columns:
+      - name: currency
+        description: "{{ doc('currency') }} - Natural key for SCD tracking"
+      - name: usd_rate
+        description: "{{ doc('usd_rate') }} - Tracked: Changes trigger new snapshot"
+      - name: dbt_scd_id
+        description: "{{ doc('dbt_scd_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: dbt_updated_at
+        description: "{{ doc('dbt_updated_at') }}"
+      - name: dbt_valid_from
+        description: "{{ doc('dbt_valid_from') }}"
+      - name: dbt_valid_to
+        description: "{{ doc('dbt_valid_to') }}"

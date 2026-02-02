@@ -1,0 +1,213 @@
+semantic_models:
+  - name: users
+    defaults:
+      agg_time_dimension: created_at
+    label: User order behavior
+    description: |
+      User mart to capture key user-level metrics related to their purchasing behavior.
+    model: ref('user')
+    entities:
+      - name: user_id
+        label: User ID
+        type: primary
+        description: '{{(doc("user_id"))}}'
+    
+    dimensions:
+      - name: created_at
+        type: time
+        label: User Creation Date
+        type_params:
+          time_granularity: day
+        description: '{{(doc("created_at"))}}'
+        expr: created_at
+
+      - name: first_purchase_on
+        type: time
+        label: First Purchase Date
+        type_params:
+          time_granularity: day
+        description: '{{(doc("first_purchase_on"))}}'
+        expr: first_purchase_on
+
+      - name: last_purchase_on
+        type: time
+        label: Last Purchase Date
+        type_params:
+          time_granularity: day
+        description: '{{(doc("last_purchase_on"))}}'
+        expr: last_purchase_on
+
+      - name: country
+        type: categorical
+        label: Country
+        description: '{{(doc("ip_country"))}}'
+        expr: country
+
+      - name: platform
+        type: categorical
+        label: Platform
+        description: '{{(doc("platform"))}}'
+        expr: platform
+
+      - name: acquisition_channel
+        type: categorical
+        label: Acquisition Channel
+        description: '{{(doc("acquisition_channel"))}}'
+        expr: acquisition_channel
+
+    measures:
+      - name: total_users
+        label: Total Users
+        description: "Total number of users in the system"
+        agg: count
+        expr: user_id
+
+      - name: total_orders
+        label: Total Orders
+        description: "Total number of orders placed by this user (lifetime)"
+        agg: sum
+        expr: total_orders
+
+      - name: total_usd_amount_spent
+        label: Total USD Amount Spent
+        description: "Total amount spent by the user in USD (lifetime)"
+        agg: sum
+        expr: total_usd_amount_spent
+
+      - name: total_gbp_amount_spent
+        label: Total GBP Amount Spent
+        description: "Total amount spent by the user in GBP (lifetime)"
+        agg: sum
+        expr: total_gbp_amount_spent
+
+      - name: usd_amount_spent_new
+        label: Total USD Amount Spent on New Orders
+        description: "Total amount spent by the user in USD on new orders (lifetime)"
+        agg: sum
+        expr: usd_amount_spent_new
+
+      - name: gbp_amount_spent_new
+        label: Total GBP Amount Spent on New Orders
+        description: "Total amount spent by the user in GBP on new orders (lifetime)"
+        agg: sum
+        expr: gbp_amount_spent_new
+
+      - name: usd_amount_spent_returned
+        label: Total USD Amount Spent on Returned Orders
+        description: "Total amount spent by the user in USD on returned orders (lifetime)"
+        agg: sum
+        expr: usd_amount_spent_returned
+
+      - name: gbp_amount_spent_returned
+        label: Total GBP Amount Spent on Returned Orders
+        description: "Total amount spent by the user in GBP on returned orders (lifetime)"
+        agg: sum
+        expr: gbp_amount_spent_returned
+      
+      - name: avg_days_between_first_and_last_purchase
+        label: Days Between First and Last Purchase
+        description: Average number of days between first and last purchase.
+        agg: avg
+        expr: days_between_first_and_last_purchase
+
+      - name: total_new_users
+        label: Number of New Users
+        description: Number of users '{{(doc("is_new"))}}'
+        agg: sum
+        expr: is_new
+
+      - name: total_returned_users
+        label: Number of Returned Users
+        description: Number of users '{{(doc("has_returned"))}}'
+        agg: sum
+        expr: has_returned
+    
+    metrics:
+      # Simple Metrics
+      - name: total_users
+        description: "Total number of users in the system"
+        type: simple
+        label: Total Users
+        type_params:
+          measure: total_users
+
+      - name: total_orders
+        description: "Total number of orders placed by this user (lifetime)"
+        type: simple
+        label: Total Orders
+        type_params:
+          measure: total_orders
+
+      - name: total_usd_amount_spent
+        description: "Total amount spent by the user in USD (lifetime)"
+        type: simple
+        label: Total USD Amount Spent
+        type_params:
+          measure: total_usd_amount_spent
+
+      - name: total_gbp_amount_spent
+        description: "Total amount spent by the user in GBP (lifetime)"
+        type: simple
+        label: Total GBP Amount Spent
+        type_params:
+          measure: total_gbp_amount_spent 
+
+      - name: days_between_first_and_last_purchase
+        description: Average number of days between first and last purchase.
+        type: simple
+        label: Days Between First and Last Purchase
+        type_params:
+          measure: avg_days_between_first_and_last_purchase
+
+      - name: total_new_users
+        description: Number of users '{{(doc("is_new"))}}'
+        type: simple
+        label: Number of New Users
+        type_params:
+          measure: total_new_users
+
+      - name: total_returned_users
+        description: Number of users '{{(doc("has_returned"))}}'
+        type: simple
+        label: Number of Returned Users
+        type_params:
+          measure: total_returned_users
+      
+      # Ratio Metrics
+      - name: average_user_amount_usd
+        label: Average User Value (USD)
+        description: "Average user value in USD (lifetime)"
+        agg: avg
+        expr: usd_total_amount / nullif(total_users, 0)
+        
+      - name: average_user_amount_gbp
+        label: Average User Value (GBP)
+        description: "Average user value in GBP (lifetime)"
+        agg: avg
+        expr: gbp_total_amount / nullif(total_users, 0)
+
+      - name: average_user_amount_usd_new
+        label: Average User Value on New Orders (USD)
+        description: "Average user value in USD on new orders (lifetime)"
+        agg: avg
+        expr: usd_amount_spent_new / nullif(total_users, 0)
+
+      - name: average_user_amount_gbp_new
+        label: Average User Value on New Orders (GBP)
+        description: "Average user value in GBP on new orders (lifetime)"
+        agg: avg
+        expr: gbp_amount_spent_new / nullif(total_users, 0) 
+
+      - name: average_user_amount_usd_returned
+        label: Average User Value on Returned Orders (USD)
+        description: "Average user value in USD on returned orders (lifetime)"
+        agg: avg
+        expr: usd_amount_spent_returned / nullif(total_users, 0)
+
+      - name: average_user_amount_gbp_returned
+        label: Average User Value on Returned Orders (GBP)
+        description: "Average user value in GBP on returned orders (lifetime)"
+        agg: avg
+        expr: gbp_amount_spent_returned / nullif(total_users, 0)
+      
+

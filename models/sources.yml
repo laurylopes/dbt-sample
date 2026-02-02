@@ -1,0 +1,78 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw source tables from production database"
+    database: dbt-airalo
+    schema: raw
+    
+    tables:
+      - name: user
+        description: |
+          Raw user data from production application database.
+          Contains user profile and demographic information.
+        columns:
+          - name: user_id
+            description: '{{(doc("user_id"))}}'
+            tests:
+              - not_null
+              - unique
+          - name: created_at
+            description: '{{(doc("created_at"))}}'
+            tests:
+              - not_null
+          - name: platform
+            description: '{{(doc("platform"))}} - Raw value (may have mixed case)'
+          - name: acquisition_channel
+            description: '{{(doc("acquisition_channel"))}}'
+          - name: ip_country
+            description: '{{(doc("ip_country"))}} - Raw value (may be null or lowercase)'
+      
+      - name: order
+        description: |
+          Raw order transaction data from production e-commerce system.
+          Contains order details, payment info, and fulfillment status.
+        columns:
+          - name: "order_id"
+            description: '{{(doc("order_id"))}}'
+            tests:
+              - not_null
+              - unique
+          - name: user_id
+            description: '{{(doc("user_id"))}} - Foreign key to user table'
+            tests:
+              - not_null
+          - name: created_at
+            description: '{{(doc("created_at"))}}'
+            tests:
+              - not_null
+          - name: updated_at
+            description: '{{(doc("updated_at"))}}'
+          - name: status
+            description: '{{(doc("status"))}} - Raw value (may have mixed case)'
+          - name: amount
+            description: '{{(doc("amount"))}}'
+          - name: currency
+            description: '{{(doc("currency"))}} - Raw value (may have mixed case)'
+          - name: esim_package
+            description: '{{(doc("esim_package"))}}'
+          - name: payment_method
+            description: '{{(doc("payment_method"))}}'
+          - name: card_country
+            description: '{{(doc("card_country"))}} - Raw value (may be null or mixed case)'
+          - name: destination_country
+            description: '{{(doc("destination_country"))}} - Raw value (may be null or mixed case)'
+      
+      - name: exchange_rate
+        description: |
+          Raw exchange rate data for currency conversions.
+          Contains daily exchange rates relative to USD.
+        columns:
+          - name: currency
+            description: '{{(doc("currency"))}}'
+            tests:
+              - not_null
+          - name: usd_rate
+            description: '{{(doc("usd_rate"))}}'
+            tests:
+              - not_null

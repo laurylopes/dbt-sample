@@ -1,0 +1,119 @@
+version: 2
+
+models:
+  - name: dim_user
+    description: |
+      User dimension table tracking historical changes in user attributes over time.
+      - Type: Slowly Changing Dimension (Type 2)
+      - Grain: One row per user per valid time period
+      - Source: snp_raw_user (snapshot of raw.user)
+    columns:
+      - name: id
+        description: "Surrogate key for each exchange rate record."
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: '{{(doc("user_id"))}}'
+        tests:
+          - not_null   
+      - name: ip_country
+        description: '{{(doc("ip_country"))}}'
+      - name: platform
+        description: '{{(doc("platform"))}}'
+      - name: updated_at
+        description: '{{(doc("updated_at"))}}'
+        tests:
+          - not_null
+      - name: valid_from
+        description: '{{(doc("valid_from"))}}'
+        tests:
+          - not_null 
+      - name: valid_to
+        description: '{{(doc("valid_to"))}}'
+
+  - name: fct_order
+    description: |
+      Order transactions including user, payment, and location details.
+      All monetary amounts are converted to USD and GBP for consistent analysis.
+      - Type: Accumulating snapshot fact table
+      - Grain: One row per order
+      - Source: stg_order, dim_user, int_gbp_to_usd_rate
+      - Refresh: Incremental load on new/updated orders
+    columns:
+      - name: order_id
+        description: '{{(doc("order_id"))}}'
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: '{{(doc("user_id"))}}'
+        tests:
+          - not_null
+      - name: created_at
+        description: '{{(doc("created_at"))}}'
+        tests:
+          - not_null
+      - name: updated_at
+        description: '{{(doc("updated_at"))}}'
+        tests:
+          - not_null
+      - name: amount
+        description: '{{(doc("amount"))}}'
+        tests:
+          - not_null
+      - name: currency
+        description: '{{(doc("currency"))}}'
+        tests:
+          - not_null
+      - name: esim_package
+        description: '{{(doc("esim_package"))}}'      
+      - name: payment_method
+        description: '{{(doc("payment_method"))}}'
+      - name: card_country
+        description: '{{(doc("card_country"))}}'  
+      - name: destination_country
+        description: '{{(doc("destination_country"))}}'
+      - name: latest_status
+        description: '{{(doc("latest_status"))}}'
+        tests:
+          - not_null
+      - name: completed_at
+        description: '{{(doc("completed_at"))}}'
+      - name: refunded_at
+        description: '{{(doc("refunded_at"))}}'
+      - name: failed_at
+        description: '{{(doc("failed_at"))}}'
+  
+  - name: fct_exchange_rate
+    description: |
+      Daily exchange rates relative to USD, tracking historical currency rates.
+      Enables time change currency rates conversions.      
+      - Type: Periodic snapshot fact table
+      - Grain: One row per currency per day
+      - Source: snp_raw_exchange_rate (snapshot of raw.exchange_rate)
+      - Refresh: Updated through orchestrated dbt snapshot command
+    columns:
+      - name: id
+        description: "Surrogate key for each exchange rate record"
+        tests:
+          - not_null
+          - unique
+      - name: currency
+        description: '{{(doc("currency"))}}'
+        tests:
+          - not_null
+      - name: usd_rate
+        description: '{{(doc("usd_rate"))}}'
+        tests:
+          - not_null
+      - name: updated_at
+        description: '{{(doc("updated_at"))}}'
+        tests:
+          - not_null
+      - name: valid_from
+        description: '{{(doc("valid_from"))}}'
+        tests:
+          - not_null
+      - name: valid_to
+        description: '{{(doc("valid_to"))}}'

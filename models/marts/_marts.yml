@@ -1,0 +1,107 @@
+version: 2
+
+models:
+  - name: user
+    description: |
+      Current state view of all users with their profile attributes and aggregated order metrics.
+      Combines user demographic data with behavioral metrics for a complete user profile.
+      - Type: Entity-centric model (Normalized, 3NF-style)
+      - Grain: One row per user
+      - Sources: dim_user, agg_user_on_order
+    columns:
+      - name: user_id
+        description: '{{(doc("user_id"))}}'
+        tests:
+          - not_null
+          - unique   
+      - name: ip_country
+        description: '{{(doc("ip_country"))}}'
+      - name: platform
+        description: '{{(doc("platform"))}}'
+      - name: created_at
+        description: '{{(doc("created_at"))}}'
+        tests:
+          - not_null 
+      - name: acquisition_channel
+        description: '{{(doc("acquisition_channel"))}}' 
+      - name: country
+        description: '{{(doc("ip_country"))}}'    
+      - name: total_orders
+        description: "Total number of orders placed by this user (zero if user has never completed a purchase)."     
+      - name: total_usd_amount_spent
+        description: "Total amount spent by this user in USD (lifetime)"     
+      - name: total_gbp_amount_spent
+        description: "Total amount spent by this user in GBP (lifetime)"     
+      - name: usd_amount_spent_new
+        description: "Total amount spent by this user in USD on orders that were their first purchase (lifetime)"     
+      - name: gbp_amount_spent_new
+        description: "Total amount spent by this user in GBP on orders that were their first purchase (lifetime)"     
+      - name: usd_amount_spent_returned
+        description: "Total amount spent by this user in USD on orders that were later returned (lifetime)"     
+      - name: gbp_amount_spent_returned
+        description: "Total amount spent by this user in GBP on orders that were later returned (lifetime)"     
+      - name: first_purchase_on
+        description: '{{doc("first_purchase_on")}}'        
+      - name: last_purchase_on
+        description: '{{doc("last_purchase_on")}}'         
+      - name: days_between_first_and_last_purchase
+        description: '{{doc("days_between_first_and_last_purchase")}}'     
+      - name: is_new
+        description: '{{doc("is_new")}}'         
+      - name: has_returned
+        description: '{{doc("has_returned")}}'         
+            
+  - name: order
+    description: | 
+      Current state view of all orders with their transaction attributes and enriched user metrics.
+      Combines order-level data with user profile attributes for a complete order record.
+      - Type: Transaction-centric model (Normalized, 3NF-style)
+      - Grain: One row per order
+      - Sources: fct_order, user
+    columns:
+      - name: order_id
+        description: '{{(doc("order_id"))}}'
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: '{{(doc("user_id"))}}'
+        tests:
+          - not_null
+      - name: created_at
+        description: '{{(doc("created_at"))}}'
+        tests:
+          - not_null
+      - name: updated_at
+        description: '{{(doc("updated_at"))}}'
+        tests:
+          - not_null
+      - name: amount
+        description: '{{(doc("amount"))}}'
+        tests:
+          - not_null
+      - name: currency
+        description: '{{(doc("currency"))}}'
+        tests:
+          - not_null
+      - name: usd_amount
+        description: '{{(doc("usd_amount"))}}'
+      - name: gbp_amount
+        description: '{{(doc("gbp_amount"))}}'
+      - name: esim_package
+        description: '{{(doc("esim_package"))}}'
+      - name: payment_method
+        description: '{{(doc("payment_method"))}}'
+      - name: card_country
+        description: '{{(doc("card_country"))}}'
+      - name: destination_country
+        description: '{{(doc("destination_country"))}}'
+      - name: latest_status
+        description: '{{(doc("latest_status"))}}'
+      - name: completed_at
+        description: '{{(doc("completed_at"))}}'
+      - name: refunded_at
+        description: '{{(doc("refunded_at"))}}'
+      - name: failed_at
+        description: '{{(doc("failed_at"))}}'
+      
